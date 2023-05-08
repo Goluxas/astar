@@ -46,19 +46,18 @@ function initialize_grid() {
   return grid;
 }
 
-function render_grid(grid, box_width, box_height, margin) {
-  /* Draw a line horizontally each box_height from top+margin * grid_height
+function render_grid() {
+  /* Draw a line horizontally each box_height from top+margin to canvas_height-margin
      and same vertically
   */
   stroke(255);
-  for (let row of grid) {
-    for (let node of row) {
-      let left = margin + box_width * node.x;
-      let top = margin + box_height * node.y;
-      line(left, top, left + box_width, top);
-      line(left, top, left, top + box_height);
-    }
+  for (let x = margin; x < canvas_width; x += box_width) {
+    line(x, margin, x, canvas_height - margin)
   }
+  for (let y = margin; y < canvas_height; y += box_height) {
+    line(margin, y, canvas_width - margin, y)
+  }
+
 }
 
 
