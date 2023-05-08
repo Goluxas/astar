@@ -13,6 +13,8 @@ let box_height;
 let margin;
 
 let world;
+let start_node;
+let target_node;
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
@@ -25,6 +27,12 @@ function setup() {
   box_width = floor((canvas_width - margin * 2) / grid_width)
   box_height = floor((canvas_height - margin*2) / grid_height)
   world = initialize_grid();
+
+  start_node = world[0][0];
+  start_node.walkable = true;
+
+  target_node = world[grid_width-1][grid_height-1]
+  target_node.walkable = true;
 
   createCanvas(canvas_width, canvas_height);
 }
@@ -84,6 +92,12 @@ function render_node(node) {
   let color = null;
   if (!node.walkable) {
     color = "gray";
+  }
+  else if (node == start_node) {
+    color = "blue";
+  }
+  else if (node == target_node) {
+    color = "yellow";
   }
 
   if (color !== null) {
