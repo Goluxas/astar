@@ -15,8 +15,8 @@ let margin;
 let world;
 
 function setup() {
-  let canvas_width = 400;
-  let canvas_height = 400;
+  let canvas_width = floor(windowWidth * 0.90);
+  let canvas_height = floor(windowHeight * 0.90);
 
   grid_width = 10;
   grid_height = 10;
