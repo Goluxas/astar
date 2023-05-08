@@ -55,7 +55,8 @@ function render_grid(grid, box_width, box_height, margin) {
     for (let node of row) {
       let left = margin + box_width * node.x;
       let top = margin + box_height * node.y;
-      line(left, top, left + box_width, top + box_height);
+      line(left, top, left + box_width, top);
+      line(left, top, left, top + box_height);
     }
   }
 }
