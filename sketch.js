@@ -1,13 +1,64 @@
+class Node {
+  constructor(x, y, walkable) {
+    this.x = x;
+    this.y = y;
+    this.walkable = walkable;
+  }
+}
 
+let canvas_width;
+let canvas_height;
+let grid_width;
+let grid_height;
+let box_width;
+let box_height;
+let margin;
+
+let world;
 
 function setup() {
-  createCanvas(400, 400);
+  canvas_width = 400;
+  canvas_height = 400;
+  grid_width = 10;
+  grid_height = 10;
+  margin = 5;
+
+  box_width = floor((canvas_width - margin * 2) / grid_width)
+  box_height = floor((canvas_height - margin*2) / grid_height)
+  world = initialize_grid();
+
+  createCanvas(canvas_width, canvas_height);
 }
 
 function draw() {
-  background(220);
+  background(0);
+  render_grid(world, box_width, box_height, margin);
 }
 
+function initialize_grid() {
+  let grid = [];
+  for (let x = 0; x < grid_width; x++) {
+    grid[x] = [];
+    for (let y = 0; y < grid_height; y++) {
+      grid[x][y] = new Node(x, y, true);
+    }
+  }
+  return grid;
+}
+
+function render_grid(grid, box_width, box_height, margin) {
+  /* Draw a line horizontally each box_height from top+margin * grid_height
+     and same vertically
+  */
+  stroke(255);
+  for (let row of grid) {
+    for (let node of row) {
+      let left = margin + box_width * node.x;
+      let top = margin + box_height * node.y;
+      line(left, top, left + box_width, top + box_height);
+    }
+  }
+}
 
 
 /*
