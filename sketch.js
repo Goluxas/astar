@@ -40,7 +40,7 @@ function initialize_grid() {
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      let walkable = random() > 0.9;
+      let walkable = random() > 0.01;
       grid[x][y] = new Node(x, y, walkable);
     }
   }
@@ -51,6 +51,7 @@ function render_grid() {
   /* Draw a line horizontally each box_height from top+margin to canvas_height-margin
      and same vertically
   */
+  noFill();
   stroke(255);
   let right_edge = margin + (box_width * grid_width);
   let bottom_edge = margin + (box_height * grid_height);
@@ -86,10 +87,11 @@ function render_node(node) {
   }
 
   if (color !== null) {
+    noStroke();
     fill(color);
     let top = node.y * box_height + margin
     let left = node.x * box_width + margin
-    rect(left, top, left + box_width, top + box_height)
+    rect(left, top, box_width, box_height)
   }
 }
 
