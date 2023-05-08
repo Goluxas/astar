@@ -15,6 +15,12 @@ let margin;
 let world;
 let start_node;
 let target_node;
+let current_node;
+
+let visited;
+let checked;
+
+let MAX_ITERATIONS = 10000;
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
@@ -38,6 +44,7 @@ function setup() {
 }
 
 function draw() {
+  pathfind_a(start_node, target_node);
   background(0);
   render_nodes(world);
   render_grid(world, box_width, box_height, margin);
@@ -48,7 +55,7 @@ function initialize_grid() {
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      let walkable = random() > 0.01;
+      let walkable = random() > 0.1;
       grid[x][y] = new Node(x, y, walkable);
     }
   }
@@ -99,6 +106,12 @@ function render_node(node) {
   else if (node == target_node) {
     color = "yellow";
   }
+  else if (visited.includes(node)) {
+    color = "red";
+  }
+  else if (checked.has(node)) {
+    color= "cyan";
+  }
 
   if (color !== null) {
     noStroke();
@@ -107,6 +120,98 @@ function render_node(node) {
     let left = node.x * box_width + margin
     rect(left, top, box_width, box_height)
   }
+}
+
+function pathfind_a(start_node, goal_node) {
+
+  visited = [];
+  checked = new Set();
+
+  current_node = start_node;
+
+  check_neighbors(current_node, goal_node, checked, visited);
+  let next_node = find_cheapest(checked, visited);
+
+  // Add min_cost_node to our visited path and check its neighbors
+  let i = 0;
+  while (!visited.includes(target_node) || i > MAX_ITERATIONS) {
+    visited.push(next_node);
+    check_neighbors(next_node, goal_node, checked, visited);
+    next_node = find_cheapest(checked, visited);
+    i++;
+  }
+
+  return visited;
+
+}
+
+function check_neighbors(current_node, goal_node, checked, visited) { 
+
+  for (let i = -1; i < 2; i++) {
+    for (let j = -1; j < 2; j++) {
+      let neighbor = get_node(current_node.x + i,  current_node.y + j)
+
+      // If that neighbor is the goal, add it to the path and return
+      if (neighbor == goal_node) {
+        visited.push(neighbor);
+        return visited;
+      }
+
+      // Otherwise if that neighbor's walkable, calculate its costs
+      if (neighbor !== null && neighbor.walkable) {
+        // calculate f- and g-costs
+        f_cost = calc_cost(neighbor, goal_node);
+        g_cost = calc_cost(neighbor, start_node);
+
+        // add to checked list
+        if (!checked.has(neighbor) || g_cost < neighbor.g_cost) {
+          neighbor.cost = f_cost + g_cost;
+          neighbor.f_cost = f_cost;
+          neighbor.g_cost = g_cost;
+          checked.add(neighbor);
+        }
+      }
+    }
+  }
+
+}
+
+function find_cheapest(checked, visited) {
+
+  // find the cheapest node and check its neighbors
+  let min_cost_node = null;
+  for (let node of checked) {
+    if (visited.includes(node)) {
+      continue;
+    }
+
+    if (min_cost_node === null || min_cost_node.cost > node.cost) {
+      min_cost_node = node;
+    }
+
+    if (node.cost == min_cost_node.cost && min_cost_node.g_cost > node.cost) {
+      min_cost_node = node;
+    }
+  }
+
+  return min_cost_node;
+
+}
+
+function get_node(x, y) {
+  if (x < 0 || x > grid_width || y < 0 || y > grid_height) {
+    return null;
+  }
+  else {
+    return world[x][y]; 
+  }
+}
+
+function calc_cost(node_a, node_b) {
+  vector_a = createVector(node_a.x, node_a.y)
+  vector_b = createVector(node_b.x, node_b.y)
+
+  return vector_a.dist(vector_b)
 }
 
 /*
