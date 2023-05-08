@@ -18,8 +18,8 @@ function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 10;
-  grid_height = 10;
+  grid_width = 80;
+  grid_height = 40;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -55,10 +55,10 @@ function render_grid() {
   stroke(255);
   let right_edge = margin + (box_width * grid_width);
   let bottom_edge = margin + (box_height * grid_height);
-  for (let x = margin; x < width; x += box_width) {
+  for (let x = margin; x <= right_edge; x += box_width) {
     line(x, margin, x, bottom_edge)
   }
-  for (let y = margin; y < height; y += box_height) {
+  for (let y = margin; y <= bottom_edge; y += box_height) {
     line(margin, y, right_edge, y)
   }
 
