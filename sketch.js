@@ -6,8 +6,6 @@ class Node {
   }
 }
 
-let canvas_width;
-let canvas_height;
 let grid_width;
 let grid_height;
 let box_width;
@@ -17,8 +15,9 @@ let margin;
 let world;
 
 function setup() {
-  canvas_width = 400;
-  canvas_height = 400;
+  let canvas_width = 400;
+  let canvas_height = 400;
+
   grid_width = 10;
   grid_height = 10;
   margin = 5;
@@ -52,11 +51,11 @@ function render_grid() {
      and same vertically
   */
   stroke(255);
-  for (let x = margin; x < canvas_width; x += box_width) {
-    line(x, margin, x, canvas_height - margin)
+  for (let x = margin; x < width; x += box_width) {
+    line(x, margin, x, height - margin)
   }
-  for (let y = margin; y < canvas_height; y += box_height) {
-    line(margin, y, canvas_width - margin, y)
+  for (let y = margin; y < height; y += box_height) {
+    line(margin, y, width - margin, y)
   }
 
 }
