@@ -33,6 +33,7 @@ function setup() {
 function draw() {
   background(0);
   render_grid(world, box_width, box_height, margin);
+  render_nodes(grid);
 }
 
 function initialize_grid() {
@@ -60,6 +61,16 @@ function render_grid() {
 
 }
 
+function render_nodes() {
+  /* If the node is:
+    walkable = gray
+    start point = blue
+    goal = yellow
+    visited = red
+    calculated = light blue
+  */
+
+}
 
 /*
 
