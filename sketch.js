@@ -51,11 +51,13 @@ function render_grid() {
      and same vertically
   */
   stroke(255);
+  let right_edge = margin + (box_width * grid_width);
+  let bottom_edge = margin + (box_height * grid_height);
   for (let x = margin; x < width; x += box_width) {
-    line(x, margin, x, height - margin)
+    line(x, margin, x, bottom_edge)
   }
   for (let y = margin; y < height; y += box_height) {
-    line(margin, y, width - margin, y)
+    line(margin, y, right_edge, y)
   }
 
 }
