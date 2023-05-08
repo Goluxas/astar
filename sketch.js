@@ -31,8 +31,8 @@ function setup() {
 
 function draw() {
   background(0);
+  render_nodes(world);
   render_grid(world, box_width, box_height, margin);
-  render_nodes(grid);
 }
 
 function initialize_grid() {
@@ -40,7 +40,8 @@ function initialize_grid() {
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      grid[x][y] = new Node(x, y, true);
+      let walkable = random() > 0.9;
+      grid[x][y] = new Node(x, y, walkable);
     }
   }
   return grid;
@@ -62,15 +63,34 @@ function render_grid() {
 
 }
 
-function render_nodes() {
+function render_nodes(grid) {
+  for (let row of grid) {
+    for (let node of row) {
+      render_node(node);
+    }
+  }
+
+}
+
+function render_node(node) {
   /* If the node is:
-    walkable = gray
+    unwalkable = gray
     start point = blue
     goal = yellow
     visited = red
     calculated = light blue
   */
+  let color = null;
+  if (!node.walkable) {
+    color = "gray";
+  }
 
+  if (color !== null) {
+    fill(color);
+    let top = node.y * box_height + margin
+    let left = node.x * box_width + margin
+    rect(left, top, left + box_width, top + box_height)
+  }
 }
 
 /*
