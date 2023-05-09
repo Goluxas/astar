@@ -70,9 +70,11 @@ let path;
 let open;
 let closed;
 
-let MAX_ITERATIONS = 100000;
-let HOLE_IN_V_WALL_ENABLED = true;
-let OBS_NOISE_ENABLED = true;
+const MAX_ITERATIONS = 100000;
+const HOLE_IN_V_WALL_ENABLED = true;
+const OBS_NOISE_ENABLED = true;
+const DISPLAY_EXPLORED = false;
+
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
@@ -184,11 +186,13 @@ function render_node(node) {
   else if (path.includes(node)) {
     color = "magenta";
   }
-  else if (open.has(node)) {
-    color = "blue";
-  }
-  else if (closed.has(node)) {
-    color = "cyan";
+  else if (DISPLAY_EXPLORED) {
+    if (open.has(node)) {
+      color = "blue";
+    }
+    else if (closed.has(node)) {
+      color = "cyan";
+    }
   }
 
   if (color !== null) {
