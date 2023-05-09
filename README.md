@@ -23,6 +23,8 @@ Added FPS counter. It's about 4 fps when the algo is taking 170ms. 1000 ms / 60 
 
 Just noticed I only get about 40 fps without any pathfinding/drawing at all. Weird.
 
+After Heap worked: ~90ms, 8 fps at worse. Big gains!
+
 ## Up Next
 
 ~~Add timer.~~

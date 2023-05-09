@@ -79,8 +79,13 @@ class Heap {
   }
 
   add(item) {
+    // Don't add duplicates
+    if (this.has(item)) {
+      return;
+    }
+
     this._array[this._lastIndex] = item;
-    this.sort_up(this._lastIndex);
+    this._sort_up(this._lastIndex);
     this._lastIndex++;
   }
 
@@ -88,7 +93,7 @@ class Heap {
     let item = this._array[0];
     this._array[0] = this._array[this._lastIndex-1];
     this._lastIndex--;
-    this.sort_down(0);
+    this._sort_down(0);
     return item;
   }
 
@@ -96,12 +101,12 @@ class Heap {
     return this._lastIndex;
   }
 
-  sort_up(index) {
+  _sort_up(index) {
     while (true) {
       let parent = floor((index - 1) / 2)
 
       if (parent >= 0 && this._array[index] < this._array[parent]) {
-        this.swap(index, parent)
+        this._swap(index, parent)
         index = parent;
       }
       else {
@@ -110,7 +115,7 @@ class Heap {
     }
   }
 
-  sort_down(index) {
+  _sort_down(index) {
     while (true) {
       let left = 2 * index + 1
       let right = left + 1
@@ -131,7 +136,7 @@ class Heap {
         }
         
         if (cur_val > lesser_val) {
-          this.swap(index, lesser_i);
+          this._swap(index, lesser_i);
           index = lesser_i;
         }
         else {
@@ -144,10 +149,14 @@ class Heap {
     }
   }
 
-  swap(i1, i2) {
+  _swap(i1, i2) {
     let item1 = this._array[i1]
     this._array[i1] = this._array[i2]
     this._array[i2] = item1;
+  }
+
+  has(item) {
+    return this._array.includes(item);
   }
 
 }
@@ -174,8 +183,8 @@ const MAX_ITERATIONS = 100000;
 const HOLE_IN_V_WALL_ENABLED = true;
 const OBS_NOISE_ENABLED = true;
 const DISPLAY_EXPLORED = false;
-const FIND_PATH = false;
-const FIND_PATH_ONCE = true;
+const FIND_PATH = true;
+const FIND_PATH_ONCE = false;
 
 
 function setup() {
