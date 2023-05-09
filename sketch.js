@@ -112,8 +112,8 @@ class Heap {
 
   sort_down(index) {
     while (true) {
-    let left = 2 * index + 1
-    let right = left + 1
+      let left = 2 * index + 1
+      let right = left + 1
 
       let cur_val = this._array[index];
 
@@ -126,7 +126,7 @@ class Heap {
 
           if (right_val < lesser_val) {
             lesser_val = right_val
-          lesser_i = right
+            lesser_i = right
           }
         }
         
@@ -174,6 +174,8 @@ const MAX_ITERATIONS = 100000;
 const HOLE_IN_V_WALL_ENABLED = true;
 const OBS_NOISE_ENABLED = true;
 const DISPLAY_EXPLORED = false;
+const FIND_PATH = false;
+const FIND_PATH_ONCE = true;
 
 
 function setup() {
@@ -206,6 +208,10 @@ function setup() {
   //target_node.walkable = true;
 
   //pathfind_a(start_node, target_node);
+  if (FIND_PATH_ONCE) {
+    pathfind_a(start_node, get_node_from_pos(target.position));
+  }
+
   frameRate(60);
   createCanvas(canvas_width, canvas_height);
 }
@@ -215,7 +221,9 @@ function draw() {
 
   // update
   target.update()
-  pathfind_a(start_node, get_node_from_pos(target.position))
+  if (FIND_PATH) {
+    pathfind_a(start_node, get_node_from_pos(target.position))
+  }
 
   // render
   render_nodes(world);
