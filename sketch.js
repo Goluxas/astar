@@ -80,8 +80,18 @@ class Heap {
 
   add(item) {
     // Don't add duplicates
-    if (this.has(item)) {
-      return;
+    // unless they're lower f_cost, then reorganize them
+    let existing_index = this._array.indexOf(item)
+    if (existing_index != -1) {
+      let existing_item = this._array[existing_index]
+      if (existing_item.f_cost > item.f_cost) {
+        this._array[existing_index] = item;
+        this._sort_up(existing_index);
+        return;
+      }
+      else {
+        return;
+      }
     }
 
     this._array[this._lastIndex] = item;
