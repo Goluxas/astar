@@ -27,6 +27,8 @@ After Heap worked: ~90ms, 8 fps at worse. Big gains!
 
 Pathfinding set to once every 10 frames: Mantaining roughly max frame rate (40) even at worst position. No effect on algo speed, obviously. There's some hitching at the very worst and the trail delays a bit behind, but this is good.
 
+Fixed another bug in the Heap logic where updated nodes would not be resorted higher. Processing times in the very worst case are still ~100ms, but it seems generally smoother. I think at this point the algorithm is properly (if not maximally) optimized, and the biggest slowdown is the size of the grid. 320x160 is small for pixels but probably more granular than you would need for a real use-case. In this case, the ball is bigger than the grid tiles!
+
 ## Up Next
 
 ~~Add timer.~~
@@ -34,3 +36,21 @@ Pathfinding set to once every 10 frames: Mantaining roughly max frame rate (40) 
 ~~Limit how often a path is requested. Currently it's running every frame, ~~and sometimes one algorithm doesn't finish before the next frame is requested.~~ Actually appears to stall the timer because I only end it when a path is found, and that's not the only way the algorithm exits.~~
 
 ~~Implement a heap queue to efficiently sort nodes.~~
+
+## Takeaways
+
+1. Grid size has a big impact on run speed.
+
+This is not map size, it's the size of the conceptual nodes that we're using to navigate. As the size of the field increases, the processing time increases exponentially. (Maybe. Just guessing by feel, haven't analyzed the big O.)
+
+A bigger grid equals smaller grid tiles, and a smaller grid tile only lets you more granularly control the path. My gut feeling is that the granularity of the tiles only matters if your players see unnatural mob movements, like jerking to a new heading at the center of each tile, and that's probably only noticeable at tiles that are very large, like 5x wider than the mob sprite.
+
+When mobs are far or off-screen, they could even use a much larger node because the player won't see the weird movement.
+
+2. Pathfind sparingly.
+
+That is, not every frame. Could have the mob request a path when it needs one or if the target has moved to a new tile.
+
+3. Pathfind asyncrhonously, probably.
+
+Pathfinding asynchronously also seems like a good idea. Won't bog down the frame if the path is complicated. The mob could just stand still until it receives the path with not too much jank. Or it could move naively toward the player or in a random direction to mask it.
