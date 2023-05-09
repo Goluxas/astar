@@ -71,15 +71,15 @@ let open;
 let closed;
 
 let MAX_ITERATIONS = 100000;
-let HOLE_IN_V_WALL_ENABLED = false;
-let OBS_NOISE_ENABLED = false;
+let HOLE_IN_V_WALL_ENABLED = true;
+let OBS_NOISE_ENABLED = true;
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 160;
-  grid_height = 80;
+  grid_width = 80;
+  grid_height = 40;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -305,7 +305,7 @@ function get_node_from_pos(pos) {
   return world[grid_x][grid_y]
 }
 
-function __get_distance(node_a, node_b) {
+function get_distance(node_a, node_b) {
   // Method from video? By memory
   // pointier than normal version but the same error
   let dx = abs(node_a.x - node_b.x)
@@ -319,7 +319,7 @@ function __get_distance(node_a, node_b) {
   }
 }
 
-function get_distance(node_a, node_b) {
+function __get_distance(node_a, node_b) {
   vector_a = createVector(node_a.x, node_a.y)
   vector_b = createVector(node_b.x, node_b.y)
 
