@@ -1,8 +1,18 @@
 class Node {
+  f_cost; // g + h
+  g_cost; // (best) distance to start
+  h_cost; // distance to target (heuristic)
+  parent; // the node that calculated these values
+
   constructor(x, y, walkable) {
     this.x = x;
     this.y = y;
     this.walkable = walkable;
+    //this.parent = null;
+  }
+
+  get f_cost() {
+    return this.g_cost + this.h_cost
   }
 }
 
@@ -17,8 +27,9 @@ let start_node;
 let target_node;
 let current_node;
 
-let visited;
-let checked;
+let path;
+let open;
+let closed;
 
 let MAX_ITERATIONS = 10000;
 
@@ -61,7 +72,8 @@ function initialize_grid() {
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      let walkable = random() > 0.1;
+      //let walkable = random() > 0.1;
+      let walkable = true;
       grid[x][y] = new Node(x, y, walkable);
     }
   }
@@ -107,16 +119,19 @@ function render_node(node) {
     color = "gray";
   }
   else if (node == start_node) {
-    color = "blue";
+    color = "green";
   }
   else if (node == target_node) {
     color = "yellow";
   }
-  else if (visited.includes(node)) {
-    color = "red";
+  else if (path.includes(node)) {
+    color = "magenta";
   }
-  else if (checked.has(node)) {
-    color= "cyan";
+  else if (open.includes(node)) {
+    color = "blue";
+  }
+  else if (closed.has(node)) {
+    color = "cyan";
   }
 
   if (color !== null) {
@@ -130,20 +145,93 @@ function render_node(node) {
 
 function pathfind_a(start_node, goal_node) {
 
-  visited = [];
-  checked = new Set();
+  open = [];
+  closed = new Set();
 
-  current_node = start_node;
+  open.push(start_node);
 
-  check_neighbors(current_node, goal_node, checked, visited);
-  let next_node = find_cheapest(checked, visited);
+  while (open.length > 0) {
+
+    // lowest f_cost, then h_cost
+    minimum = null;
+    for (let node of open) {
+      if (minimum == null || node.f_cost < minimum.f_cost || node.f_cost == minimum.f_cost && node.h_cost < minimum.h_cost) {
+        minimum = node;
+      }
+    }
+    current = minimum
+    open.splice( open.indexOf(current) )
+    closed.add(current)
+    
+    if (current == goal_node) {
+      retrace_path(start_node, goal_node);
+      return;
+    }
+
+    check_neighbors(current, open, closed);
+  }
+
+}
+
+function check_neighbors(node, open, closed) {
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+
+      neighbor = get_node(node.x+i, node.y+j)
+      if (neighbor == null || !neighbor.walkable || closed.has(neighbor)) {
+        continue;
+      }
+      
+      // calculate the cost and save to node
+      h_cost = get_distance(neighbor, target_node);
+      g_cost = node.g_cost + get_distance(node, neighbor);
+
+      if (neighbor.parent == null || neighbor.g_cost > g_cost) {
+        neighbor.g_cost = g_cost;
+        neighbor.h_cost = h_cost;
+        neighbor.parent = node;
+      }
+
+      open.push(neighbor);
+    }
+  }
+}
+
+function retrace_path(start_node, end_node) {
+  path = [];
+
+  let node = end_node;
+
+  while (node.parent != null) {
+    path.push(node.parent)
+    node = node.parent
+  }
+
+  return path
+}
+
+function __pathfind_a(start_node, goal_node) {
+  let neighbors = check_neighbors(current_node, goal_node, checked, visited);
+  let next_node = find_cheapest(neighbors, visited);
+  path.push(next_node);
+  visited.push(next_node);
 
   // Add min_cost_node to our visited path and check its neighbors
   let i = 0;
-  while (!visited.includes(target_node) || i > MAX_ITERATIONS) {
+  while (!visited.includes(target_node) && i < MAX_ITERATIONS) {
+    current_node = next_node;
+    path.push(current_node);
+    neighbors = check_neighbors(current_node, goal_node, checked, visited);
+    if (neighbors == null) {
+      break;
+    }
+    next_node = find_cheapest(neighbors, visited);
+    if (next_node === null || next_node.cost > current_node.cost) {
+      path.pop();
+      next_node = find_cheapest(checked, visited);
+    }
     visited.push(next_node);
-    check_neighbors(next_node, goal_node, checked, visited);
-    next_node = find_cheapest(checked, visited);
+
     i++;
   }
 
@@ -151,25 +239,31 @@ function pathfind_a(start_node, goal_node) {
 
 }
 
-function check_neighbors(current_node, goal_node, checked, visited) { 
+function __check_neighbors(current_node, goal_node, checked, visited) { 
 
-  for (let i = -1; i < 2; i++) {
-    for (let j = -1; j < 2; j++) {
+  let neighbors = [];
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      if (i == 0 && j  == 0) {
+        continue;
+      }
+
       let neighbor = get_node(current_node.x + i,  current_node.y + j)
 
       // If that neighbor is the goal, add it to the path and return
       if (neighbor == goal_node) {
         visited.push(neighbor);
-        return visited;
+        return null;
       }
 
       // Otherwise if that neighbor's walkable, calculate its costs
       if (neighbor !== null && neighbor.walkable) {
         // calculate f- and g-costs
-        f_cost = calc_cost(neighbor, goal_node);
-        g_cost = calc_cost(neighbor, start_node);
+        f_cost = get_distance(neighbor, goal_node);
+        g_cost = get_distance(neighbor, start_node);
 
         // add to checked list
+        neighbors.push(neighbor)
         if (!checked.has(neighbor) || g_cost < neighbor.g_cost) {
           neighbor.cost = f_cost + g_cost;
           neighbor.f_cost = f_cost;
@@ -180,13 +274,15 @@ function check_neighbors(current_node, goal_node, checked, visited) {
     }
   }
 
+  return neighbors;
+
 }
 
-function find_cheapest(checked, visited) {
+function find_cheapest(set_to_check, visited) {
 
   // find the cheapest node and check its neighbors
   let min_cost_node = null;
-  for (let node of checked) {
+  for (let node of set_to_check) {
     if (visited.includes(node)) {
       continue;
     }
@@ -213,7 +309,7 @@ function get_node(x, y) {
   }
 }
 
-function calc_cost(node_a, node_b) {
+function get_distance(node_a, node_b) {
   vector_a = createVector(node_a.x, node_a.y)
   vector_b = createVector(node_b.x, node_b.y)
 
