@@ -36,8 +36,8 @@ function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 80;
-  grid_height = 40;
+  grid_width = 160;
+  grid_height = 80;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -71,8 +71,7 @@ function initialize_grid() {
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      //let walkable = random() > 0.1;
-      let walkable = true;
+      let walkable = random() > 0.1;
       grid[x][y] = new Node(x, y, walkable);
     }
   }
