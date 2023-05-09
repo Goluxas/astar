@@ -25,10 +25,12 @@ Just noticed I only get about 40 fps without any pathfinding/drawing at all. Wei
 
 After Heap worked: ~90ms, 8 fps at worse. Big gains!
 
+Pathfinding set to once every 10 frames: Mantaining roughly max frame rate (40) even at worst position. No effect on algo speed, obviously. There's some hitching at the very worst and the trail delays a bit behind, but this is good.
+
 ## Up Next
 
 ~~Add timer.~~
 
-Limit how often a path is requested. Currently it's running every frame, ~~and sometimes one algorithm doesn't finish before the next frame is requested.~~ Actually appears to stall the timer because I only end it when a path is found, and that's not the only way the algorithm exits.
+~~Limit how often a path is requested. Currently it's running every frame, ~~and sometimes one algorithm doesn't finish before the next frame is requested.~~ Actually appears to stall the timer because I only end it when a path is found, and that's not the only way the algorithm exits.~~
 
-Implement a heap queue to efficiently sort nodes.
+~~Implement a heap queue to efficiently sort nodes.~~

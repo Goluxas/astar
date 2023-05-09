@@ -183,8 +183,10 @@ const MAX_ITERATIONS = 100000;
 const HOLE_IN_V_WALL_ENABLED = true;
 const OBS_NOISE_ENABLED = true;
 const DISPLAY_EXPLORED = false;
-const FIND_PATH = true;
 const FIND_PATH_ONCE = false;
+const FIND_PATH = true;
+const FIND_ON_FRAME = 10; // amount to delay in frames. 1 = run every frame, 2 = every other, etc. Only works if FIND_PATH = true
+let path_frame = 0;
 
 
 function setup() {
@@ -230,7 +232,7 @@ function draw() {
 
   // update
   target.update()
-  if (FIND_PATH) {
+  if (FIND_PATH && (path_frame++ % FIND_ON_FRAME) == 0) {
     pathfind_a(start_node, get_node_from_pos(target.position))
   }
 
