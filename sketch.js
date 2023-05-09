@@ -52,6 +52,83 @@ class BouncingBall {
   }
 }
 
+class Heap {
+  _array;
+  _lastIndex;
+
+  constructor(max_size) {
+    this._array = new Array(max_size);
+    this._lastIndex = 0;
+  }
+
+  add(item) {
+    this._array[this._lastIndex] = item;
+    this.sort_up(this._lastIndex);
+    this._lastIndex++;
+  }
+
+  pop() {
+    item = this._array[0];
+    this._array[0] = this._array[this._lastIndex-1];
+    this._lastIndex--;
+    this.sort_down(0);
+    return item;
+  }
+
+  sort_up(index) {
+    let parent = floor(index / 2) - 1
+
+    while (parent > 0) {
+      if (this._array[index] < this._array[parent]) {
+        this.swap(index, parent)
+        index = parent;
+      }
+      else {
+        break;
+      }
+      parent = floor(index / 2) - 1
+    }
+  }
+
+  sort_down(index) {
+    let left = 2 * index + 1
+    let right = left + 1
+
+    while (true) {
+      cur_val = this._array[index];
+
+      if (left < this._lastIndex) {
+        let lesser_val = this._array[left]
+        let lesser_i = left
+
+        if (right < this._lastIndex) {
+          lesser_val = this._array[right]
+          lesser_i = right
+        }
+        
+        if (cur_val > lesser_val) {
+          swap(index, lesser_i);
+        }
+        else {
+          break;
+        }
+      }
+      else {
+        break;
+      }
+
+      index = lesser_i;
+    }
+  }
+
+  swap(i1, i2) {
+    temp = this._array[i1]
+    this._array[i1] = this._array[i2]
+    this._array[i2] = temp;
+  }
+
+}
+
 
 let grid_width;
 let grid_height;
@@ -80,8 +157,8 @@ function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 160;
-  grid_height = 80;
+  grid_width = 320;
+  grid_height = 160;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -121,6 +198,7 @@ function draw() {
   render_nodes(world);
   render_grid(world, box_width, box_height, margin);
   target.draw();
+  render_fps();
 }
 
 
@@ -205,13 +283,20 @@ function render_node(node) {
   }
 }
 
+function render_fps() {
+  fps = floor(getFrameRate());
+  fill("yellow");
+  textSize(32);
+  text(fps, grid_bounds.x-30, 30);
+}
+
 function pathfind_a(start_node, goal_node) {
 
   console.time("Pathfinding")
   reset_nodes()
 
   path = [];
-  open = new Set();
+  open = new Heap(grid_width * grid_height);
   closed = new Set();
 
   if (goal_node.walkable == false) {
