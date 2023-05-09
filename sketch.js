@@ -148,6 +148,8 @@ function pathfind_a(start_node, goal_node) {
   open = [];
   closed = new Set();
 
+  start_node.g_cost = 0;
+  start_node.h_cost = get_distance(start_node, goal_node);
   open.push(start_node);
 
   while (open.length > 0) {
@@ -168,12 +170,12 @@ function pathfind_a(start_node, goal_node) {
       return;
     }
 
-    check_neighbors(current, open, closed);
+    check_neighbors(current, goal_node, open, closed);
   }
 
 }
 
-function check_neighbors(node, open, closed) {
+function check_neighbors(node, goal, open, closed) {
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
 
@@ -183,7 +185,7 @@ function check_neighbors(node, open, closed) {
       }
       
       // calculate the cost and save to node
-      h_cost = get_distance(neighbor, target_node);
+      h_cost = get_distance(neighbor, goal);
       g_cost = node.g_cost + get_distance(node, neighbor);
 
       if (neighbor.parent == null || neighbor.g_cost > g_cost) {
