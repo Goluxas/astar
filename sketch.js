@@ -80,8 +80,8 @@ function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 80;
-  grid_height = 40;
+  grid_width = 160;
+  grid_height = 80;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -106,6 +106,7 @@ function setup() {
   //target_node.walkable = true;
 
   //pathfind_a(start_node, target_node);
+  frameRate(60);
   createCanvas(canvas_width, canvas_height);
 }
 
@@ -206,6 +207,7 @@ function render_node(node) {
 
 function pathfind_a(start_node, goal_node) {
 
+  console.time("Pathfinding")
   reset_nodes()
 
   path = [];
@@ -213,6 +215,7 @@ function pathfind_a(start_node, goal_node) {
   closed = new Set();
 
   if (goal_node.walkable == false) {
+    console.timeEnd("Pathfinding");
     return;
   }
 
@@ -236,6 +239,7 @@ function pathfind_a(start_node, goal_node) {
     
     if (current == goal_node) {
       retrace_path(start_node, goal_node);
+      console.timeEnd("Pathfinding")
       return;
     }
 

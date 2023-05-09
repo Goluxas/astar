@@ -19,6 +19,8 @@ Turning off the display of non-path explored nodes drastically sped up execution
 
 ## Up Next
 
-Limit how often a path is requested. I want to display algorithm runtime in console, and currently it's running every frame so old numbers will be shoved offscreen too fast to be used.
+~~Add timer.~~
+
+Limit how often a path is requested. Currently it's running every frame, ~~and sometimes one algorithm doesn't finish before the next frame is requested.~~ Actually appears to stall the timer because I only end it when a path is found, and that's not the only way the algorithm exits.
 
 Implement a heap queue to efficiently sort nodes.
