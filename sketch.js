@@ -13,10 +13,6 @@ class Node {
   get f_cost() {
     return this.g_cost + this.h_cost;
   }
-
-  get key() {
-    return "(" + this.x + "," + this.y + ")"
-  }
 }
 
 let grid_width;
@@ -133,7 +129,7 @@ function render_node(node) {
   else if (open.has(node)) {
     color = "blue";
   }
-  else if (closed.get(node.key) == 1) {
+  else if (closed.has(node)) {
     color = "cyan";
   }
 
@@ -150,7 +146,7 @@ function pathfind_a(start_node, goal_node) {
 
   path = [];
   open = new Set();
-  closed = new Map();
+  closed = new Set();
 
   start_node.g_cost = 0;
   start_node.h_cost = get_distance(start_node, goal_node);
@@ -168,7 +164,7 @@ function pathfind_a(start_node, goal_node) {
     }
     current = minimum
     open.delete(current)
-    closed.set(current.key, 1);
+    closed.add(current);
     
     if (current == goal_node) {
       retrace_path(start_node, goal_node);
@@ -186,7 +182,7 @@ function check_neighbors(node, goal, open, closed) {
     for (let j = -1; j <= 1; j++) {
 
       neighbor = get_node(node.x+i, node.y+j)
-      if (neighbor == null || !neighbor.walkable || closed.get(neighbor.key) == 1) {
+      if (neighbor == null || !neighbor.walkable || closed.has(neighbor)) {
         continue;
       }
       
