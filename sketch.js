@@ -10,6 +10,18 @@ class Node {
     //this.parent = null;
   }
 
+  valueOf() {
+    /* A bit awkward since JavaScript doesn't let us override less-than
+       The idea is that if f_cost is equal we should go by the lower h_cost.
+       So by raising f_cost's magnitude we can combine them into one number.
+       This is hacky though because if h_cost exceeds 10000 everything breaks.
+    */
+    if (this.h_cost == null || this.g_cost == null) {
+      return null;
+    }
+    return this.f_cost * 10000 + this.h_cost;
+  }
+
   get f_cost() {
     return this.g_cost + this.h_cost;
   }
@@ -21,7 +33,7 @@ class Node {
   }
 }
 
-class MovingTarget {
+class BouncingBall {
   constructor(x, y) {
     this.position = createVector(x, y)
     this.momentum = p5.Vector.random2D().mult(random(1,5));
@@ -52,6 +64,113 @@ class MovingTarget {
   }
 }
 
+class Heap {
+  // This particular heap sorts the lowest values to the top (index 0), which is the opposite of textbook heaps
+  _array;
+  _lastIndex;
+
+  constructor(max_size) {
+    this._array = new Array(max_size);
+    this._lastIndex = 0;
+  }
+
+  [Symbol.iterator]() {
+    return this._array;
+  }
+
+  add(item) {
+    // Don't add duplicates
+    // unless they're lower f_cost, then reorganize them
+    let existing_index = this._array.indexOf(item)
+    if (existing_index != -1) {
+      let existing_item = this._array[existing_index]
+      if (existing_item.f_cost > item.f_cost) {
+        this._array[existing_index] = item;
+        this._sort_up(existing_index);
+        return;
+      }
+      else {
+        return;
+      }
+    }
+
+    this._array[this._lastIndex] = item;
+    this._sort_up(this._lastIndex);
+    this._lastIndex++;
+  }
+
+  pop() {
+    let item = this._array[0];
+    this._array[0] = this._array[this._lastIndex-1];
+    this._lastIndex--;
+    this._sort_down(0);
+    return item;
+  }
+
+  get size() {
+    return this._lastIndex;
+  }
+
+  _sort_up(index) {
+    while (true) {
+      let parent = floor((index - 1) / 2)
+
+      if (parent >= 0 && this._array[index] < this._array[parent]) {
+        this._swap(index, parent)
+        index = parent;
+      }
+      else {
+        break;
+      }
+    }
+  }
+
+  _sort_down(index) {
+    while (true) {
+      let left = 2 * index + 1
+      let right = left + 1
+
+      let cur_val = this._array[index];
+
+      if (left < this._lastIndex) {
+        let lesser_val = this._array[left]
+        let lesser_i = left
+
+        if (right < this._lastIndex) {
+          let right_val = this._array[right]
+
+          if (right_val < lesser_val) {
+            lesser_val = right_val
+            lesser_i = right
+          }
+        }
+        
+        if (cur_val > lesser_val) {
+          this._swap(index, lesser_i);
+          index = lesser_i;
+        }
+        else {
+          break;
+        }
+      }
+      else {
+        break;
+      }
+    }
+  }
+
+  _swap(i1, i2) {
+    let item1 = this._array[i1]
+    this._array[i1] = this._array[i2]
+    this._array[i2] = item1;
+  }
+
+  has(item) {
+    return this._array.includes(item);
+  }
+
+}
+
 
 let grid_width;
 let grid_height;
@@ -66,20 +185,26 @@ let target;
 let start_node;
 let current_node;
 
-let path;
+let path = [];
 let open;
 let closed;
 
-let MAX_ITERATIONS = 100000;
-let HOLE_IN_V_WALL_ENABLED = true;
-let OBS_NOISE_ENABLED = true;
+const MAX_ITERATIONS = 100000;
+const HOLE_IN_V_WALL_ENABLED = true;
+const OBS_NOISE_ENABLED = true;
+const DISPLAY_EXPLORED = false;
+const FIND_PATH_ONCE = false;
+const FIND_PATH = true;
+const FIND_ON_FRAME = 10; // amount to delay in frames. 1 = run every frame, 2 = every other, etc. Only works if FIND_PATH = true
+let path_frame = 0;
+
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
   let canvas_height = floor(windowHeight * 0.90);
 
-  grid_width = 80;
-  grid_height = 40;
+  grid_width = 320;
+  grid_height = 160;
   margin = 5;
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
@@ -98,12 +223,17 @@ function setup() {
   start_node = world[0][0];
   start_node.walkable = true;
 
-  target = new MovingTarget(box_width * (grid_width - 2), box_height * (grid_height - 2));
+  target = new BouncingBall(box_width * (grid_width - 2), box_height * (grid_height - 2));
 
   //target_node = world[grid_width-1][grid_height-1]
   //target_node.walkable = true;
 
   //pathfind_a(start_node, target_node);
+  if (FIND_PATH_ONCE) {
+    pathfind_a(start_node, get_node_from_pos(target.position));
+  }
+
+  frameRate(60);
   createCanvas(canvas_width, canvas_height);
 }
 
@@ -112,12 +242,15 @@ function draw() {
 
   // update
   target.update()
-  pathfind_a(start_node, get_node_from_pos(target.position))
+  if (FIND_PATH && (path_frame++ % FIND_ON_FRAME) == 0) {
+    pathfind_a(start_node, get_node_from_pos(target.position))
+  }
 
   // render
   render_nodes(world);
   render_grid(world, box_width, box_height, margin);
   target.draw();
+  render_fps();
 }
 
 
@@ -184,11 +317,13 @@ function render_node(node) {
   else if (path.includes(node)) {
     color = "magenta";
   }
-  else if (open.has(node)) {
-    color = "blue";
-  }
-  else if (closed.has(node)) {
-    color = "cyan";
+  else if (DISPLAY_EXPLORED) {
+    if (open.has(node)) {
+      color = "blue";
+    }
+    else if (closed.has(node)) {
+      color = "cyan";
+    }
   }
 
   if (color !== null) {
@@ -200,15 +335,24 @@ function render_node(node) {
   }
 }
 
+function render_fps() {
+  fps = floor(getFrameRate());
+  fill("yellow");
+  textSize(32);
+  text(fps, grid_bounds.x-30, 30);
+}
+
 function pathfind_a(start_node, goal_node) {
 
+  console.time("Pathfinding")
   reset_nodes()
 
   path = [];
-  open = new Set();
+  open = new Heap(grid_width * grid_height);
   closed = new Set();
 
   if (goal_node.walkable == false) {
+    console.timeEnd("Pathfinding");
     return;
   }
 
@@ -220,6 +364,7 @@ function pathfind_a(start_node, goal_node) {
   while (open.size > 0 && i < MAX_ITERATIONS) {
 
     // lowest f_cost, then h_cost
+    /*
     minimum = null;
     for (let node of open) {
       if (minimum == null || node.f_cost < minimum.f_cost || node.f_cost == minimum.f_cost && node.h_cost < minimum.h_cost) {
@@ -227,11 +372,13 @@ function pathfind_a(start_node, goal_node) {
       }
     }
     current = minimum
-    open.delete(current)
+    */
+    current = open.pop()
     closed.add(current);
     
     if (current == goal_node) {
       retrace_path(start_node, goal_node);
+      console.timeEnd("Pathfinding")
       return;
     }
 
