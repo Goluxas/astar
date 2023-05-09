@@ -21,7 +21,7 @@ class Node {
   }
 }
 
-class MovingTarget {
+class BouncingBall {
   constructor(x, y) {
     this.position = createVector(x, y)
     this.momentum = p5.Vector.random2D().mult(random(1,5));
@@ -98,7 +98,7 @@ function setup() {
   start_node = world[0][0];
   start_node.walkable = true;
 
-  target = new MovingTarget(box_width * (grid_width - 2), box_height * (grid_height - 2));
+  target = new BouncingBall(box_width * (grid_width - 2), box_height * (grid_height - 2));
 
   //target_node = world[grid_width-1][grid_height-1]
   //target_node.walkable = true;
