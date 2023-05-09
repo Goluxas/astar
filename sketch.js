@@ -15,22 +15,58 @@ class Node {
   }
 }
 
+class MovingTarget {
+  constructor(x, y) {
+    this.position = createVector(x, y)
+    this.momentum = p5.Vector.random2D().mult(random(1,5));
+    this.size = 10;
+    this.color = "yellow";
+  }
+
+  update() {
+    this.position = this.position.add(this.momentum);
+    this.checkBounds();
+  }
+
+  checkBounds() {
+    if (this.position.x - this.size/2 < 0 || this.position.x + this.size/2 > grid_bounds.x) {
+      this.momentum.x = this.momentum.x * -1
+      this.position.x = constrain(this.position.x, margin + this.size/2, grid_bounds.x-this.size/2)
+    }
+    if (this.position.y - this.size/2 < 0 || this.position.y + this.size/2 > grid_bounds.y) {
+      this.momentum.y = this.momentum.y * -1
+      this.position.y = constrain(this.position.y, margin+this.size/2, grid_bounds.y-this.size/2)
+    }
+  }
+
+  draw() {
+    noStroke();
+    fill(this.color);
+    circle(this.position.x, this.position.y, this.size);
+  }
+}
+
+
 let grid_width;
 let grid_height;
 let box_width;
 let box_height;
 let margin;
+let grid_bounds;
 
 let world;
+let target;
+
 let start_node;
-let target_node;
 let current_node;
 
 let path;
 let open;
 let closed;
 
-let MAX_ITERATIONS = 10000;
+let MAX_ITERATIONS = 100000;
+let HOLE_IN_V_WALL_ENABLED = false;
+let OBS_NOISE_ENABLED = false;
 
 function setup() {
   let canvas_width = floor(windowWidth * 0.90);
@@ -42,36 +78,53 @@ function setup() {
 
   box_width = floor((canvas_width - margin * 2) / grid_width)
   box_height = floor((canvas_height - margin*2) / grid_height)
+  grid_bounds = createVector(margin + box_width * grid_width, margin + box_height * grid_height)
+
   world = initialize_grid();
 
-  // Testing
-  for (let y=0; y<grid_height; y++) {
-    world[floor(grid_width/2)][y].walkable = false;
+  if (HOLE_IN_V_WALL_ENABLED) {
+    for (let y=0; y<grid_height; y++) {
+      world[floor(grid_width/2)][y].walkable = false;
+    }
+    world[floor(grid_width/2)][3].walkable = true;
   }
-  world[floor(grid_width/2)][3].walkable = true;
 
   start_node = world[0][0];
   start_node.walkable = true;
 
-  target_node = world[grid_width-1][grid_height-1]
-  target_node.walkable = true;
+  target = new MovingTarget(box_width * (grid_width - 2), box_height * (grid_height - 2));
 
-  pathfind_a(start_node, target_node);
+  //target_node = world[grid_width-1][grid_height-1]
+  //target_node.walkable = true;
+
+  //pathfind_a(start_node, target_node);
   createCanvas(canvas_width, canvas_height);
 }
 
 function draw() {
   background(0);
+
+  // update
+  target.update()
+  pathfind_a(start_node, get_node_from_pos(target.position))
+
+  // render
   render_nodes(world);
   render_grid(world, box_width, box_height, margin);
+  target.draw();
 }
+
+
 
 function initialize_grid() {
   let grid = [];
   for (let x = 0; x < grid_width; x++) {
     grid[x] = [];
     for (let y = 0; y < grid_height; y++) {
-      let walkable = random() > 0.1;
+      let walkable = true;
+      if (OBS_NOISE_ENABLED) {
+        walkable = random() > 0.1;
+      }
       grid[x][y] = new Node(x, y, walkable);
     }
   }
@@ -119,9 +172,9 @@ function render_node(node) {
   else if (node == start_node) {
     color = "green";
   }
-  else if (node == target_node) {
-    color = "yellow";
-  }
+  //else if (node == target_node) {
+    //color = "yellow";
+  //}
   else if (path.includes(node)) {
     color = "magenta";
   }
@@ -146,6 +199,10 @@ function pathfind_a(start_node, goal_node) {
   path = [];
   open = new Set();
   closed = new Set();
+
+  if (goal_node.walkable == false) {
+    return;
+  }
 
   start_node.g_cost = 0;
   start_node.h_cost = get_distance(start_node, goal_node);
@@ -214,12 +271,22 @@ function retrace_path(start_node, end_node) {
 }
 
 function get_node(x, y) {
-  if (x < 0 || x > grid_width || y < 0 || y > grid_height) {
+  if (x < 0 || x >= grid_width || y < 0 || y >= grid_height) {
     return null;
   }
   else {
     return world[x][y]; 
   }
+}
+
+function get_node_from_pos(pos) {
+  grid_x = floor((pos.x-margin) / box_width)
+  grid_y = floor((pos.y-margin) / box_height)
+
+  grid_x = constrain(grid_x, 0, grid_width-1)
+  grid_y = constrain(grid_y, 0, grid_height-1)
+
+  return world[grid_x][grid_y]
 }
 
 function __get_distance(node_a, node_b) {
