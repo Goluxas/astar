@@ -13,6 +13,12 @@ class Node {
   get f_cost() {
     return this.g_cost + this.h_cost;
   }
+
+  reset() {
+    this.g_cost = null;
+    this.h_cost = null;
+    this.parent = null;
+  }
 }
 
 class MovingTarget {
@@ -196,6 +202,8 @@ function render_node(node) {
 
 function pathfind_a(start_node, goal_node) {
 
+  reset_nodes()
+
   path = [];
   open = new Set();
   closed = new Set();
@@ -231,6 +239,14 @@ function pathfind_a(start_node, goal_node) {
     i++;
   }
 
+}
+
+function reset_nodes() {
+  for (let row of world) {
+    for (let node of row) {
+      node.reset()
+    }
+  }
 }
 
 function check_neighbors(node, goal, open, closed) {
