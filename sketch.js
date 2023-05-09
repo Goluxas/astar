@@ -241,66 +241,6 @@ function __pathfind_a(start_node, goal_node) {
 
 }
 
-function __check_neighbors(current_node, goal_node, checked, visited) { 
-
-  let neighbors = [];
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      if (i == 0 && j  == 0) {
-        continue;
-      }
-
-      let neighbor = get_node(current_node.x + i,  current_node.y + j)
-
-      // If that neighbor is the goal, add it to the path and return
-      if (neighbor == goal_node) {
-        visited.push(neighbor);
-        return null;
-      }
-
-      // Otherwise if that neighbor's walkable, calculate its costs
-      if (neighbor !== null && neighbor.walkable) {
-        // calculate f- and g-costs
-        f_cost = get_distance(neighbor, goal_node);
-        g_cost = get_distance(neighbor, start_node);
-
-        // add to checked list
-        neighbors.push(neighbor)
-        if (!checked.has(neighbor) || g_cost < neighbor.g_cost) {
-          neighbor.cost = f_cost + g_cost;
-          neighbor.f_cost = f_cost;
-          neighbor.g_cost = g_cost;
-          checked.add(neighbor);
-        }
-      }
-    }
-  }
-
-  return neighbors;
-
-}
-
-function find_cheapest(set_to_check, visited) {
-
-  // find the cheapest node and check its neighbors
-  let min_cost_node = null;
-  for (let node of set_to_check) {
-    if (visited.includes(node)) {
-      continue;
-    }
-
-    if (min_cost_node === null || min_cost_node.cost > node.cost) {
-      min_cost_node = node;
-    }
-
-    if (node.cost == min_cost_node.cost && min_cost_node.g_cost > node.cost) {
-      min_cost_node = node;
-    }
-  }
-
-  return min_cost_node;
-
-}
 
 function get_node(x, y) {
   if (x < 0 || x > grid_width || y < 0 || y > grid_height) {
@@ -312,6 +252,20 @@ function get_node(x, y) {
 }
 
 function get_distance(node_a, node_b) {
+  // Method from video? By memory
+  // pointier than normal version but the same error
+  let dx = abs(node_a.x - node_b.x)
+  let dy = abs(node_a.y - node_b.y)
+
+  if (dx > dy) {
+    return 14 * dy + 10 * (dx - dy);
+  }
+  else {
+    return 14 * dx + 10 * (dy - dx);
+  }
+}
+
+function __get_distance(node_a, node_b) {
   vector_a = createVector(node_a.x, node_a.y)
   vector_b = createVector(node_b.x, node_b.y)
 
