@@ -10,6 +10,18 @@ class Node {
     //this.parent = null;
   }
 
+  valueOf() {
+    /* A bit awkward since JavaScript doesn't let us override less-than
+       The idea is that if f_cost is equal we should go by the lower h_cost.
+       So by raising f_cost's magnitude we can combine them into one number.
+       This is hacky though because if h_cost exceeds 10000 everything breaks.
+    */
+    if (this.h_cost == null || this.g_cost == null) {
+      return null;
+    }
+    return this.f_cost * 10000 + this.h_cost;
+  }
+
   get f_cost() {
     return this.g_cost + this.h_cost;
   }
@@ -53,12 +65,17 @@ class BouncingBall {
 }
 
 class Heap {
+  // This particular heap sorts the lowest values to the top (index 0), which is the opposite of textbook heaps
   _array;
   _lastIndex;
 
   constructor(max_size) {
     this._array = new Array(max_size);
     this._lastIndex = 0;
+  }
+
+  [Symbol.iterator]() {
+    return this._array;
   }
 
   add(item) {
@@ -68,46 +85,54 @@ class Heap {
   }
 
   pop() {
-    item = this._array[0];
+    let item = this._array[0];
     this._array[0] = this._array[this._lastIndex-1];
     this._lastIndex--;
     this.sort_down(0);
     return item;
   }
 
-  sort_up(index) {
-    let parent = floor(index / 2) - 1
+  get size() {
+    return this._lastIndex;
+  }
 
-    while (parent > 0) {
-      if (this._array[index] < this._array[parent]) {
+  sort_up(index) {
+    while (true) {
+      let parent = floor((index - 1) / 2)
+
+      if (parent >= 0 && this._array[index] < this._array[parent]) {
         this.swap(index, parent)
         index = parent;
       }
       else {
         break;
       }
-      parent = floor(index / 2) - 1
     }
   }
 
   sort_down(index) {
+    while (true) {
     let left = 2 * index + 1
     let right = left + 1
 
-    while (true) {
-      cur_val = this._array[index];
+      let cur_val = this._array[index];
 
       if (left < this._lastIndex) {
         let lesser_val = this._array[left]
         let lesser_i = left
 
         if (right < this._lastIndex) {
-          lesser_val = this._array[right]
+          let right_val = this._array[right]
+
+          if (right_val < lesser_val) {
+            lesser_val = right_val
           lesser_i = right
+          }
         }
         
         if (cur_val > lesser_val) {
-          swap(index, lesser_i);
+          this.swap(index, lesser_i);
+          index = lesser_i;
         }
         else {
           break;
@@ -116,15 +141,13 @@ class Heap {
       else {
         break;
       }
-
-      index = lesser_i;
     }
   }
 
   swap(i1, i2) {
-    temp = this._array[i1]
+    let item1 = this._array[i1]
     this._array[i1] = this._array[i2]
-    this._array[i2] = temp;
+    this._array[i2] = item1;
   }
 
 }
@@ -143,7 +166,7 @@ let target;
 let start_node;
 let current_node;
 
-let path;
+let path = [];
 let open;
 let closed;
 
@@ -312,6 +335,7 @@ function pathfind_a(start_node, goal_node) {
   while (open.size > 0 && i < MAX_ITERATIONS) {
 
     // lowest f_cost, then h_cost
+    /*
     minimum = null;
     for (let node of open) {
       if (minimum == null || node.f_cost < minimum.f_cost || node.f_cost == minimum.f_cost && node.h_cost < minimum.h_cost) {
@@ -319,7 +343,8 @@ function pathfind_a(start_node, goal_node) {
       }
     }
     current = minimum
-    open.delete(current)
+    */
+    current = open.pop()
     closed.add(current);
     
     if (current == goal_node) {

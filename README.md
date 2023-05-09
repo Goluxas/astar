@@ -21,6 +21,8 @@ Set the grid to 320x160 for performance testing. At this size it takes about 170
 
 Added FPS counter. It's about 4 fps when the algo is taking 170ms. 1000 ms / 60 frames = ~16.6 ms/frame ideally. 4 frames means we're taking about 250 ms per frame to process, so something else must be slow too. ~~Drawing the path?~~ Nope, disabling that made no difference really.
 
+Just noticed I only get about 40 fps without any pathfinding/drawing at all. Weird.
+
 ## Up Next
 
 ~~Add timer.~~
