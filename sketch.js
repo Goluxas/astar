@@ -1,5 +1,4 @@
 class Node {
-  f_cost; // g + h
   g_cost; // (best) distance to start
   h_cost; // distance to target (heuristic)
   parent; // the node that calculated these values
@@ -12,7 +11,11 @@ class Node {
   }
 
   get f_cost() {
-    return this.g_cost + this.h_cost
+    return this.g_cost + this.h_cost;
+  }
+
+  get key() {
+    return "(" + this.x + "," + this.y + ")"
   }
 }
 
@@ -57,11 +60,11 @@ function setup() {
   target_node = world[grid_width-1][grid_height-1]
   target_node.walkable = true;
 
+  pathfind_a(start_node, target_node);
   createCanvas(canvas_width, canvas_height);
 }
 
 function draw() {
-  pathfind_a(start_node, target_node);
   background(0);
   render_nodes(world);
   render_grid(world, box_width, box_height, margin);
@@ -130,7 +133,7 @@ function render_node(node) {
   else if (open.includes(node)) {
     color = "blue";
   }
-  else if (closed.has(node)) {
+  else if (closed.get(node.key) == 1) {
     color = "cyan";
   }
 
@@ -145,14 +148,16 @@ function render_node(node) {
 
 function pathfind_a(start_node, goal_node) {
 
+  path = [];
   open = [];
-  closed = new Set();
+  closed = new Map();
 
   start_node.g_cost = 0;
   start_node.h_cost = get_distance(start_node, goal_node);
   open.push(start_node);
 
-  while (open.length > 0) {
+  let i = 0;
+  while (open.length > 0 && i < MAX_ITERATIONS) {
 
     // lowest f_cost, then h_cost
     minimum = null;
@@ -163,7 +168,7 @@ function pathfind_a(start_node, goal_node) {
     }
     current = minimum
     open.splice( open.indexOf(current) )
-    closed.add(current)
+    closed.set(current, 1);
     
     if (current == goal_node) {
       retrace_path(start_node, goal_node);
@@ -171,6 +176,7 @@ function pathfind_a(start_node, goal_node) {
     }
 
     check_neighbors(current, goal_node, open, closed);
+    i++;
   }
 
 }
@@ -180,7 +186,7 @@ function check_neighbors(node, goal, open, closed) {
     for (let j = -1; j <= 1; j++) {
 
       neighbor = get_node(node.x+i, node.y+j)
-      if (neighbor == null || !neighbor.walkable || closed.has(neighbor)) {
+      if (neighbor == null || !neighbor.walkable || closed.get(neighbor.key) == 1) {
         continue;
       }
       
@@ -212,36 +218,6 @@ function retrace_path(start_node, end_node) {
   return path
 }
 
-function __pathfind_a(start_node, goal_node) {
-  let neighbors = check_neighbors(current_node, goal_node, checked, visited);
-  let next_node = find_cheapest(neighbors, visited);
-  path.push(next_node);
-  visited.push(next_node);
-
-  // Add min_cost_node to our visited path and check its neighbors
-  let i = 0;
-  while (!visited.includes(target_node) && i < MAX_ITERATIONS) {
-    current_node = next_node;
-    path.push(current_node);
-    neighbors = check_neighbors(current_node, goal_node, checked, visited);
-    if (neighbors == null) {
-      break;
-    }
-    next_node = find_cheapest(neighbors, visited);
-    if (next_node === null || next_node.cost > current_node.cost) {
-      path.pop();
-      next_node = find_cheapest(checked, visited);
-    }
-    visited.push(next_node);
-
-    i++;
-  }
-
-  return visited;
-
-}
-
-
 function get_node(x, y) {
   if (x < 0 || x > grid_width || y < 0 || y > grid_height) {
     return null;
@@ -251,7 +227,7 @@ function get_node(x, y) {
   }
 }
 
-function get_distance(node_a, node_b) {
+function __get_distance(node_a, node_b) {
   // Method from video? By memory
   // pointier than normal version but the same error
   let dx = abs(node_a.x - node_b.x)
@@ -265,7 +241,7 @@ function get_distance(node_a, node_b) {
   }
 }
 
-function __get_distance(node_a, node_b) {
+function get_distance(node_a, node_b) {
   vector_a = createVector(node_a.x, node_a.y)
   vector_b = createVector(node_b.x, node_b.y)
 
