@@ -34,6 +34,12 @@ function setup() {
   box_height = floor((canvas_height - margin*2) / grid_height)
   world = initialize_grid();
 
+  // Testing
+  for (let y=0; y<grid_height; y++) {
+    world[floor(grid_width/2)][y].walkable = false;
+  }
+  world[floor(grid_width/2)][3].walkable = true;
+
   start_node = world[0][0];
   start_node.walkable = true;
 
