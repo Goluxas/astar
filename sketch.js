@@ -306,8 +306,8 @@ function get_node_from_pos(pos) {
 }
 
 function get_distance(node_a, node_b) {
-  // Method from video? By memory
-  // pointier than normal version but the same error
+  // Whole number approximation method from video
+  // cleaner and faster results on a square grid
   let dx = abs(node_a.x - node_b.x)
   let dy = abs(node_a.y - node_b.y)
 
