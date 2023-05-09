@@ -130,7 +130,7 @@ function render_node(node) {
   else if (path.includes(node)) {
     color = "magenta";
   }
-  else if (open.includes(node)) {
+  else if (open.has(node)) {
     color = "blue";
   }
   else if (closed.get(node.key) == 1) {
@@ -149,15 +149,15 @@ function render_node(node) {
 function pathfind_a(start_node, goal_node) {
 
   path = [];
-  open = [];
+  open = new Set();
   closed = new Map();
 
   start_node.g_cost = 0;
   start_node.h_cost = get_distance(start_node, goal_node);
-  open.push(start_node);
+  open.add(start_node);
 
   let i = 0;
-  while (open.length > 0 && i < MAX_ITERATIONS) {
+  while (open.size > 0 && i < MAX_ITERATIONS) {
 
     // lowest f_cost, then h_cost
     minimum = null;
@@ -167,8 +167,8 @@ function pathfind_a(start_node, goal_node) {
       }
     }
     current = minimum
-    open.splice( open.indexOf(current) )
-    closed.set(current, 1);
+    open.delete(current)
+    closed.set(current.key, 1);
     
     if (current == goal_node) {
       retrace_path(start_node, goal_node);
@@ -200,7 +200,7 @@ function check_neighbors(node, goal, open, closed) {
         neighbor.parent = node;
       }
 
-      open.push(neighbor);
+      open.add(neighbor);
     }
   }
 }
